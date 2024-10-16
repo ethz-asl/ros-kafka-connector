@@ -1,0 +1,7 @@
+UGV:
+    - topic: "/wrist_camera/color/image_raw" 
+      msg_type: "sensor_msgs/Image"
+    - topic: "/tf" 
+      msg_type: "tf2_mgs/TFMessage"
+    - topic: "/joint_state" 
+      msg_type: "sensor_msgs/JointState"
