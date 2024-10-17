@@ -7,11 +7,12 @@
     <arg name="update_rate" default="10.0" />
     <arg name="robot_name" default="UGV" />
 
-    <node pkg="ros_kafka_connector" type="kafka_publisher.py" name="kafka_publisher">
+    <node pkg="ros_kafka_connector" type="ros_publisher.py" name="ros_publisher">
         <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
         <param name="~topics_filename" value="$(arg topics_filename)"/>
         <param name="~update_rate" value="$(arg update_rate)"/>
         <param name="~robot_name" value="$(arg robot_name)" />
     </node>
+
 
 </launch>
