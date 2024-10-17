@@ -4,7 +4,7 @@ This is a ROS package for subscribing or publishing to topics using Kafka.
 
 Takes a yaml file with {`msg_type`, `ros_topic`, `kafka_topic`}. Can publish the messages between ros and kafka. Put the yaml file in the `config/` folder. 
 
-Example yaml file in: [`topics.yaml`](../blob/heron/config/topics.yaml)
+Example yaml file in: [`topics.yaml`](https://github.com/ethz-asl/ros-kafka-connector/blob/heron/config/topics.yaml)
 
 ```yaml
 robot_name:
