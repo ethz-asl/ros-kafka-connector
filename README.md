@@ -46,6 +46,6 @@ roslaunch ros_kafka_connector ros_publisher.launch
 ```
 
 To start publishing ROS topics to kafka:
-```
-$ roslaunch ros_kafka_connector kafka_publisher.launch
+```console
+roslaunch ros_kafka_connector kafka_publisher.launch
 ```
