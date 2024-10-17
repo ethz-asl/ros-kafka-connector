@@ -2,54 +2,50 @@
 
 This is a ROS package for subscribing or publishing to topics using Kafka. 
 
+Takes a yaml file with {`msg_type`, `ros_topic`, `kafka_topic`}. Can publish the messages between ros and kafka. Put the yaml file in the `config/` folder. 
+
+Example yaml file in: `topics.yaml`
+
+```yaml
+robot_name:
+    - msg_type: "std_msgs/String"
+      ros_topic: "/string"
+      kafka_topic: "string"
+    - msg_type: "geometry_msgs/Pose"
+      ros_topic: "/pose"
+      kafka_topic: "pose"
+```
+
+Will find dictionary:
+```python
+topic_dict: {
+    'std_msgs/String': {'/string', 'string'},
+    'geometry_msgs/Pose' : {'/pose', 'pose'}
+}
+```
+Message types that are added are in the `utils.py` file.  To add new message types to the converter, add cases to `import_msg_type` function. If you have custom messages from ROS, you need to make them callable in your ros workspace. 
+
 | Parameter       |  Info           | Default  |
 | ------------- |:-------------:| -----:|
 | bootstrap_server      | IP of kafka server | "localhost:9092" |
-| kafka_topic      | topic name found in Kafka      |  "test" |
-| ros_topic | topic name found in ROS      |    "test" |
-| msg_type | full ROS message name      |    "std_msgs/String" |
+| topics_filename      | file name of yaml      |  "topics.yaml" |
+| update_rate | update publisher rate      |    "10.0" |
+| robot_name | first line of yaml |   "UGV" |
 
 
-
-Currently std_msgs/String, geometry_msgs/Twist and sensor_msgs/Image are supported. You can add any message type by adding the import to the utils.py file and then changing the parameter in the launch file.
-
-
-## Publish to ROS topic
+#### installation & running
+additional libraries required:
 ```
-$ roslaunch ros_kafka_connector ros_publish.launch
-```
-After updating the launch file with the correct settings for your topic, you can test it by pubishing a json to your kafka topic using a kafka publisher. The String message json is simple: {'data': 'Hello world!'}
-
-You could also send the message to the kafka server through python with the following script.
-
-#### Install kafka library
-```
-$ pip install kafka-python
-```
-#### python script
-```
-from kafka import KafkaProducer
-kafka_topic = 'test'
-msg = 'Hello World!'
-producer = KafkaProducer(bootstrap_servers="localhost:9092", value_serializer=lambda x: json.dumps(x).encode('ascii')) 
-producer.send(kafka_topic, {'data': msg})          # 'data' is part of the string message definition
+pip install kafka-python pyyaml
+sudo apt install ros-noetic-rospy-message-converter
 ```
 
-## Publish to Kafka topic
-```
-$ roslaunch ros_kafka_connector kafka_publish.launch
-```
-
-To test this node you can simply type...
-
-#### Terminal
-
-```
-$ roscore
-$ rostopic pub -r 3 /test std_msgs/String "data: 'Hello World!'"
+To start publishing kafka topics to ROS:
+```console
+roslaunch ros_kafka_connector ros_publisher.launch
 ```
 
-This will output the hello world at 3 hz to the "/test" ROS topic. To confirm this works you can open up another terminal and type in 
-"rostopic echo /test" which should show you the same message is being published to ROS. This message should also be published to the Kafka topic.
-
-
+To start publishing ROS topics to kafka:
+```
+$ roslaunch ros_kafka_connector kafka_publisher.launch
+```

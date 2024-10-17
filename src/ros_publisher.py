@@ -50,7 +50,6 @@ class ROSPublisher:
         self._bootstrap_server = rospy.get_param(
             "~bootstrap_server", "localhost:9092"
         )
-        self._update_rate = float(rospy.get_param("~update_rate", "10.0"))
         self._robot_name = rospy.get_param("~robot_name", "UGV")
         
 
