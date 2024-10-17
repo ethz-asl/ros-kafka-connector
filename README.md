@@ -23,7 +23,7 @@ topic_dict: {
     'geometry_msgs/Pose' : {'/pose', 'pose'}
 }
 ```
-Message types that are added are in the `utils.py` file.  To add new message types to the converter, add cases to `import_msg_type` function. If you have custom messages from ROS, you need to make them callable in your ros workspace. 
+Message types that are added are in the [`utils.py`](https://github.com/ethz-asl/ros-kafka-connector/blob/master/src/utils.py) file.  To add new message types to the converter, add cases to `import_msg_type` function. If you have custom messages from ROS, you need to make them callable in your ros workspace. 
 
 | Parameter       |  Info           | Default  |
 | ------------- |:-------------:| -----:|
