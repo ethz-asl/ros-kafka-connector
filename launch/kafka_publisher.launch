@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <arg name="bootstrap_server" default="localhost:9092"/>
+    <arg name="topics_filename" default="topics.yaml"/>
+    <arg name="update_rate" default="10.0" />
+
+    <node pkg="ros_kafka_connector" type="kafka_publisher.py" name="kafka_publisher">
+        <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
+        <param name="~topics_filename" value="$(arg topics_filename)"/>
+        <param name="~update_rate" value="$(arg update_rate)"/>
+    </node>
+
+</launch>

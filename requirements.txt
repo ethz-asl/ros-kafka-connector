@@ -1,0 +1,2 @@
+sudo apt install ros-noetic-rospy-message-converter
+pip install kafka-python pyyaml
