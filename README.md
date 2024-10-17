@@ -4,7 +4,7 @@ This is a ROS package for subscribing or publishing to topics using Kafka.
 
 Takes a yaml file with {`msg_type`, `ros_topic`, `kafka_topic`}. Can publish the messages between ros and kafka. Put the yaml file in the `config/` folder. 
 
-Example yaml file in: `topics.yaml`
+Example yaml file in: [`topics.yaml`](https://github.com/ethz-asl/ros-kafka-connector/blob/heron/config/topics.yaml)
 
 ```yaml
 robot_name:
@@ -23,7 +23,7 @@ topic_dict: {
     'geometry_msgs/Pose' : {'/pose', 'pose'}
 }
 ```
-Message types that are added are in the `utils.py` file.  To add new message types to the converter, add cases to `import_msg_type` function. If you have custom messages from ROS, you need to make them callable in your ros workspace. 
+Message types that are added are in the [`utils.py`](https://github.com/ethz-asl/ros-kafka-connector/blob/master/src/utils.py) file.  To add new message types to the converter, add cases to `import_msg_type` function. If you have custom messages from ROS, you need to make them callable in your ros workspace. 
 
 | Parameter       |  Info           | Default  |
 | ------------- |:-------------:| -----:|
