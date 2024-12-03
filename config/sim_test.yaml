@@ -1,0 +1,13 @@
+UGV:
+    - msg_type: "sensor_msgs/Image"
+      ros_topic: "/wrist_camera/color/image_raw" 
+      kafka_topic: "heron.sim-test.wrist-camera" 
+    # - msg_type: "sensor_msgs/JointState"
+    #   ros_topic: "/joint_states" 
+    #   kafka_topic: "heron.sim-test.arm-joints"
+    # - msg_type: "nav_msgs/Odometry"
+    #   ros_topic: "/odom"
+    #   kafka_topic: "heron.sim-test.base-odom"
+    # - msg_type: "sensor_msgs/LaserScan"
+    #   ros_topic: "/front/scan"
+    #   kafka_topic: "heron.sim-test.lidar"

@@ -2,13 +2,15 @@
 
 <launch>
 
-    <arg name="bootstrap_server" default="localhost:9092"/>
+    <arg name="bootstrap_server" default="10.2.0.8:9092"/>
+    <arg name="sercurity_protocol" default="PLAINTEXT"/>
     <arg name="topics_filename" default="topics.yaml"/>
-    <arg name="update_rate" default="10.0" />
+    <arg name="update_rate" default="0.1" />
     <arg name="robot_name" default="UGV" />
 
     <node pkg="ros_kafka_connector" type="kafka_publisher.py" name="kafka_publisher">
         <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
+        <param name="~security_protocol" value="$(arg sercurity_protocol)"/>
         <param name="~topics_filename" value="$(arg topics_filename)"/>
         <param name="~update_rate" value="$(arg update_rate)"/>
         <param name="~robot_name" value="$(arg robot_name)" />

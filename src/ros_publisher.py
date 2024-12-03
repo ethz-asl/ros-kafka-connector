@@ -32,6 +32,7 @@ class ROSPublisher:
             consumer = KafkaConsumer(
                 kafka_topic,
                 bootstrap_servers=self._bootstrap_server,
+                security_protocol=self._security_protocol,
                 value_deserializer=lambda m: json.loads(m.decode("ascii")),
                 auto_offset_reset="latest",
                 consumer_timeout_ms=5000,
@@ -48,10 +49,12 @@ class ROSPublisher:
     def load_parameters(self) -> None:
         self._filename = rospy.get_param("~topics_filename", "topics.yaml")
         self._bootstrap_server = rospy.get_param(
-            "~bootstrap_server", "localhost:9092"
+            "~bootstrap_server", "10.2.0.8:9092"
+        )
+        self._security_protocol = rospy.get_param(
+            "~security_protocol", "PLAINTEXT"
         )
         self._robot_name = rospy.get_param("~robot_name", "UGV")
-        
 
     def run(self):
 
@@ -59,8 +62,10 @@ class ROSPublisher:
             for consumer, publisher in zip(self.consumers, self.publishers):
                 for msg in consumer:
                     json_str = json.dump(msg.value)
-                    ros_msg = json_message_converter.convert_json_to_ros_message(
-                        publisher.type, json_str
+                    ros_msg = (
+                        json_message_converter.convert_json_to_ros_message(
+                            publisher.type, json_str
+                        )
                     )
                     publisher.publish(ros_msg)
 
