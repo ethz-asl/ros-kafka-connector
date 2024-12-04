@@ -1,3 +1,4 @@
 sudo apt install ros-noetic-rospy-message-converter
 pip install kafka-python pyyaml
 pip install confluent-kafka
+pip install opencv-python

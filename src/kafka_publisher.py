@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
 import json
+import base64
+import cv2
+from cv_bridge import CvBridge
 from kafka import KafkaProducer, KafkaConsumer
 from confluent_kafka.admin import AdminClient, NewTopic
 import rospy
 import rospkg
 from rospy_message_converter import json_message_converter
+from sensor_msgs.msg import Image
 import utils
 
 
@@ -32,6 +36,7 @@ class KafkaPublisher:
         yaml_file = (
             pkg.get_path("ros_kafka_connector") + "/config/" + self._filename
         )
+        self.bridge = CvBridge()
 
         topics_dict = utils.load_yaml_to_dict(yaml_file, self._robot_name)
 
@@ -42,7 +47,7 @@ class KafkaPublisher:
 
         try:
             self.admin_client.list_topics(timeout=5)
-            rospy.logwarn("Kafka connection successful.")
+            rospy.loginfo("Kafka connection successful.")
         except Exception as err:
             rospy.logerr(f"Failed to connect to Kafka: {err}")
             rospy.signal_shutdown("Kafka connection failed.")
@@ -60,14 +65,24 @@ class KafkaPublisher:
             ros_topic = topics["ros_topic"]
             kafka_topic = topics["kafka_topic"]
             msg_class = utils.import_msg_type(msg_type)
-            rospy.Subscriber(
-                ros_topic,
-                msg_class,
-                lambda msg: self.callback(msg, kafka_topic),
-            )
-            rospy.logerr(
-                f"Using {msg_type} from ROS: {ros_topic} -> KAFKA: {kafka_topic}"
-            )
+            if msg_class == Image:
+                rospy.Subscriber(
+                    ros_topic,
+                    msg_class,
+                    lambda msg, kafka_topic=kafka_topic: self.image_callback(msg, kafka_topic),
+                )
+                rospy.loginfo(
+                    f"Subscribing to Image topic: {ros_topic} -> KAFKA: {kafka_topic}"
+                )
+            else:
+                rospy.Subscriber(
+                    ros_topic,
+                    msg_class,
+                    lambda msg, kafka_topic=kafka_topic: self.callback(msg, kafka_topic),
+                )
+                rospy.loginfo(
+                    f"Using {msg_type} from ROS: {ros_topic} -> KAFKA: {kafka_topic}"
+                )
 
     def load_parameters(self) -> None:
         self._filename = rospy.get_param("~topics_filename", "topics.yaml")
@@ -86,29 +101,53 @@ class KafkaPublisher:
 
         :param topics_dict (dict): dictionary of kafka & ros topics
         """
-        kafka_topics = [topics["kafka_topic"] for topics in topics_dict.values()]
+        kafka_topics = [
+            topics["kafka_topic"] for topics in topics_dict.values()
+        ]
 
         # check topic doesn't already exist
         existing_topics = self.admin_client.list_topics().topics.keys()
         new_topics = [
             NewTopic(topic, num_partitions=1, replication_factor=1)
-            for topic in kafka_topics if topic not in existing_topics
+            for topic in kafka_topics
+            if topic not in existing_topics
         ]
 
         if new_topics:
-            rospy.logerr(f"Creating kafka topic {[t.topic for t in new_topics]}")
+            rospy.loginfo(
+                f"Creating kafka topic {[t.topic for t in new_topics]}"
+            )
             futures = self.admin_client.create_topics(new_topics)
 
             for topic, future in futures.items():
                 try:
-                    future.result() # wait for op to finish
-                    rospy.logerr(f"Kafka topic '{topic}' created sucessfully!")
+                    future.result()  # wait for op to finish
+                    rospy.loginfo(f"Kafka topic '{topic}' created sucessfully!")
                 except Exception as err:
                     rospy.logerr(f"Failed to create topic '{topic}' : {err}")
-        
+
         else:
             rospy.logerr("All kafka topics already exist.")
 
+    def image_callback(self, msg, kafka_topic: str) -> None:
+        try:
+            # convert ros image to compressed jpeg and base64 encode
+            cv_image = self.bridge.imgmsg_to_cv2(
+                msg, desired_encoding="passthrough"
+            )
+            _, buffer = cv2.imencode(
+                ".jpg", cv_image, [cv2.IMWRITE_JPEG_QUALITY, 50]
+            )
+            base64_image = base64.b64encode(buffer).decode("utf-8")
+
+            # Create a json message
+            json_message = {"topic": kafka_topic, "image_data": base64_image}
+            rospy.loginfo(f"Encoded image to Base64 for topic {kafka_topic}")
+            self.producer.send(kafka_topic, json_message)
+        except Exception as err:
+            rospy.logerr(
+                f"Failed to process image message for topic {kafka_topic}: {err}"
+            )
 
     def callback(self, msg, kafka_topic: str) -> None:
         """
@@ -118,11 +157,10 @@ class KafkaPublisher:
         :param kafka_topic (str): kafka topic name
 
         """
-        rospy.logerr(f"Received message on ROS topic -> {kafka_topic}")
+        rospy.loginfo(f"Received message on ROS topic -> {kafka_topic}")
 
         json_str = json_message_converter.convert_ros_message_to_json(msg)
-        rospy.logerr(f"Converted msgs: {json_str}...")
-        
+
         self.producer.send(kafka_topic, json_str)
 
     def run(self):
