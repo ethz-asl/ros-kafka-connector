@@ -14,7 +14,6 @@ import utils
 
 
 class KafkaPublisher:
-    # TODO need to make kafka topics!!
     """
     takes a yaml file with:
     - ros msg types
@@ -130,6 +129,7 @@ class KafkaPublisher:
             rospy.logerr("All kafka topics already exist.")
 
     def image_callback(self, msg, kafka_topic: str) -> None:
+        ### also log to Robotnik
         try:
             # convert ros image to compressed jpeg and base64 encode
             cv_image = self.bridge.imgmsg_to_cv2(
