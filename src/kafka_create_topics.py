@@ -13,7 +13,7 @@ from sensor_msgs.msg import Image
 import utils
 
 
-class KafkaPublisher:
+class KafkaCreateTopics:
     """
     takes a yaml file with:
     - ros msg types
@@ -27,8 +27,7 @@ class KafkaPublisher:
 
     def __init__(self):
 
-        rospy.init_node("kafka_publisher")
-        rospy.on_shutdown(self.shutdown)
+        rospy.init_node("kafka_topic_creator")
 
         self.load_parameters()
         pkg = rospkg.RosPack()
@@ -37,7 +36,7 @@ class KafkaPublisher:
         )
         self.bridge = CvBridge()
 
-        self.topics_dict = utils.load_yaml_to_dict(yaml_file, self._robot_name)
+        topics_dict = utils.load_yaml_to_dict(yaml_file, self._robot_name)
 
         # initialise admin client to create topics
         self.admin_client = AdminClient(
@@ -51,33 +50,7 @@ class KafkaPublisher:
             rospy.logerr(f"Failed to connect to Kafka: {err}")
             rospy.signal_shutdown("Kafka connection failed.")
 
-        self.create_kafka_topics(self.topics_dict)
-
-        # start kafka producer
-        self.producer = KafkaProducer(
-            bootstrap_servers=self._bootstrap_server,
-            security_protocol=self._security_protocol,
-            value_serializer=lambda m: json.dumps(m).encode("ascii"),
-        )
-
-        # create topic storage for the latest messages
-        self.latest_msgs = {
-            details["ros_topic"]: None for details in self.topics_dict.values()
-        }
-
-        # Subscribers for all topics
-        for msg_type, details in self.topics_dict.items():
-            ros_topic = details["ros_topic"]
-            msg_class = utils.import_msg_type(msg_type)
-            rospy.Subscriber(
-                ros_topic,
-                msg_class,
-                self.message_callback,
-                callback_args=ros_topic,
-            )
-            rospy.loginfo(f"Subscribed to ROS topic: {ros_topic}")
-
-        self.run()
+        self.create_kafka_topics(topics_dict)
 
     def load_parameters(self) -> None:
         self._filename = rospy.get_param("~topics_filename", "topics.yaml")
@@ -124,52 +97,10 @@ class KafkaPublisher:
         else:
             rospy.logerr("All kafka topics already exist.")
 
-    def message_callback(self, msg, ros_topic):
-        """
-        stores latest ros msg
-        """
-        self.latest_msgs[ros_topic] = msg
-
-    def publish_to_kafka(self):
-        """
-        publish the latest messages to their respective Kafka topics.
-        """
-        for msg_type, details in self.topics_dict.items():
-            ros_topic = details["ros_topic"]
-            kafka_topic = details["kafka_topic"]
-            msg = self.latest_msgs[ros_topic]
-
-            if msg is None:
-                continue  # Skip if no message has been received yet
-
-            try:
-                # Convert other messages to JSON
-                json_message = (
-                    json_message_converter.convert_ros_message_to_json(msg)
-                )
-
-                self.producer.send(kafka_topic, json_message)
-                rospy.loginfo(f"Published to Kafka topic: {kafka_topic}")
-            except Exception as e:
-                rospy.logerr(
-                    f"Failed to publish message from {ros_topic} to {kafka_topic}: {e}"
-                )
-
-    def run(self):
-        rate = rospy.Rate(self._update_rate)
-        while not rospy.is_shutdown():
-            self.publish_to_kafka()
-            rate.sleep()
-
-    def shutdown(self):
-        rospy.loginfo("Shutting down")
-
-
 if __name__ == "__main__":
 
     try:
-        node = KafkaPublisher()
-        node.run()
+        node = KafkaCreateTopics()
     except rospy.ROSInterruptException:
         pass
 

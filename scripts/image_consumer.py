@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-t", "--topic", default="ugv.image.body", help="Kafka topic name") 
+    parser.add_argument("-t", "--topic", default="test.image.stream", help="Kafka topic name") 
     parser.add_argument("-s", "--server", default="10.2.0.8:9092", help="Kafka bootstrap server")
 
     args = parser.parse_args()

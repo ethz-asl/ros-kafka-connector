@@ -140,6 +140,14 @@ def import_msg_type(msg_type: str):
         from tf2_msgs.msg import TFMessage
 
         subscriber_msg = TFMessage
+    elif msg_type == "robotnik_msgs/BatteryStatus":
+        from robotnik_msgs.msg import BatteryStatus
+
+        subscriber_msg = BatteryStatus
+    elif msg_type == "robotnik_msgs/State":
+        from robotnik_msgs.msg import State
+
+        subscriber_msg = State
     else:
         raise ValueError(
             f'MSG "{msg_type}" IS NOT SUPPORTED \nPlease add imports to utils.py for specific msg type.'

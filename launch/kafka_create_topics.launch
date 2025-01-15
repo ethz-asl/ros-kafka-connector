@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <arg name="bootstrap_server" default="10.2.0.8:9092"/>
+    <arg name="sercurity_protocol" default="PLAINTEXT"/>
+    <arg name="topics_filename" default="topics.yaml"/>
+    <arg name="update_rate" default="0.1" />
+    <arg name="robot_name" default="UGV" />
+
+    <node pkg="ros_kafka_connector" type="kafka_create_topics.py" name="kafka_create_topics">
+        <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
+        <param name="~security_protocol" value="$(arg sercurity_protocol)"/>
+        <param name="~topics_filename" value="$(arg topics_filename)"/>
+        <param name="~update_rate" value="$(arg update_rate)"/>
+        <param name="~robot_name" value="$(arg robot_name)" />
+    </node>
+
+</launch>
