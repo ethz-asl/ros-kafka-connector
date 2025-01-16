@@ -1,15 +1,9 @@
 #!/usr/bin/env python
 
-import json
-import base64
-import cv2
 from cv_bridge import CvBridge
-from kafka import KafkaProducer, KafkaConsumer
 from confluent_kafka.admin import AdminClient, NewTopic
 import rospy
 import rospkg
-from rospy_message_converter import json_message_converter
-from sensor_msgs.msg import Image
 import utils
 
 
@@ -20,8 +14,7 @@ class KafkaCreateTopics:
     - ros topic names
     - kafka topic names
 
-    subscribes to the ros topic, and converts to json format
-    publishes json msg to the kafka topic
+    creates kafka topics
 
     """
 
@@ -96,6 +89,7 @@ class KafkaCreateTopics:
 
         else:
             rospy.logerr("All kafka topics already exist.")
+
 
 if __name__ == "__main__":
 

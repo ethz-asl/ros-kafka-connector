@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
-import json
-import base64
-import cv2
-from cv_bridge import CvBridge
-from kafka import KafkaProducer, KafkaConsumer
-from confluent_kafka.admin import AdminClient, NewTopic
 import rospy
 import rospkg
+import json
+
+from typing import Dict, Any
+from kafka import KafkaProducer
+from confluent_kafka.admin import AdminClient, NewTopic
 from rospy_message_converter import json_message_converter
 from sensor_msgs.msg import Image
+
 import utils
 
 
@@ -25,7 +25,7 @@ class KafkaPublisher:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
 
         rospy.init_node("kafka_publisher")
         rospy.on_shutdown(self.shutdown)
@@ -35,7 +35,6 @@ class KafkaPublisher:
         yaml_file = (
             pkg.get_path("ros_kafka_connector") + "/config/" + self._filename
         )
-        self.bridge = CvBridge()
 
         self.topics_dict = utils.load_yaml_to_dict(yaml_file, self._robot_name)
 
@@ -65,7 +64,7 @@ class KafkaPublisher:
             details["ros_topic"]: None for details in self.topics_dict.values()
         }
 
-        # Subscribers for all topics
+        # subscribers for all topics
         for msg_type, details in self.topics_dict.items():
             ros_topic = details["ros_topic"]
             msg_class = utils.import_msg_type(msg_type)
@@ -90,7 +89,7 @@ class KafkaPublisher:
         self._update_rate = float(rospy.get_param("~update_rate", "10.0"))
         self._robot_name = rospy.get_param("~robot_name", "UGV")
 
-    def create_kafka_topics(self, topics_dict: dict) -> None:
+    def create_kafka_topics(self, topics_dict: Dict[str, Dict[str, str]]) -> None:
         """
         creates kafka topics based on config
 
@@ -124,13 +123,13 @@ class KafkaPublisher:
         else:
             rospy.logerr("All kafka topics already exist.")
 
-    def message_callback(self, msg, ros_topic):
+    def message_callback(self, msg: Any, ros_topic: str) -> None:
         """
         stores latest ros msg
         """
         self.latest_msgs[ros_topic] = msg
 
-    def publish_to_kafka(self):
+    def publish_to_kafka(self) -> None:
         """
         publish the latest messages to their respective Kafka topics.
         """
@@ -140,10 +139,10 @@ class KafkaPublisher:
             msg = self.latest_msgs[ros_topic]
 
             if msg is None:
-                continue  # Skip if no message has been received yet
+                continue  # skip if no message has been received yet
 
             try:
-                # Convert other messages to JSON
+                # convert messages to JSON
                 json_message = (
                     json_message_converter.convert_ros_message_to_json(msg)
                 )
@@ -155,13 +154,13 @@ class KafkaPublisher:
                     f"Failed to publish message from {ros_topic} to {kafka_topic}: {e}"
                 )
 
-    def run(self):
+    def run(self) -> None:
         rate = rospy.Rate(self._update_rate)
         while not rospy.is_shutdown():
             self.publish_to_kafka()
             rate.sleep()
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         rospy.loginfo("Shutting down")
 
 

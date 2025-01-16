@@ -19,7 +19,16 @@ from heron_msgs.srv import (
 )
 
 class KafkaImagePublisher:
+    """
+    sends ROS images to kafka with ROS srv call
+    images in kafka are in the Base64 type.
 
+    services will send an image before and after image processing
+    e.g. pothole detection
+
+    hardcoded ros topics & kafka topics
+    kafka topics should already be created
+    """
     def __init__(self):
 
         rospy.init_node("kafka_image_publisher")
@@ -34,8 +43,9 @@ class KafkaImagePublisher:
             value_serializer=lambda m: json.dumps(m).encode("ascii"),
         )
 
-        self.bridge = CvBridge()
+        self.bridge = CvBridge() # start bridge to convert images
 
+        # services for before/after image processing
         self.body_img_srv = rospy.Service(
             "/kafka/publish_body_image",
             SendImageToKafka,
@@ -77,7 +87,7 @@ class KafkaImagePublisher:
 
         return self.send_to_kafka(self.arm_kafka_topic_, req.message, req.image)
 
-    def send_to_kafka(self, kafka_topic, msg, img) -> SendImageToKafkaResponse:
+    def send_to_kafka(self, kafka_topic: str, msg: str, img: Image) -> SendImageToKafkaResponse:
         try:
             cv_image = self.bridge.imgmsg_to_cv2(
                 img, desired_encoding="passthrough"
