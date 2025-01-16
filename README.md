@@ -25,6 +25,8 @@ topic_dict: {
 ```
 Message types that are added are in the [`utils.py`](https://github.com/ethz-asl/ros-kafka-connector/blob/master/src/utils.py) file.  To add new message types to the converter, add cases to `import_msg_type` function. If you have custom messages from ROS, you need to make them callable in your ros workspace. 
 
+This package does depend on both [`robotnik_msgs`](https://github.com/RobotnikAutomation/robotnik_msgs/tree/ros-devel) and [`heron_msgs`](https://github.com/RobotnikAutomation/heron_msgs). Make sure to add these packages to your catkin ws. 
+
 | Parameter       |  Info           | Default  |
 | ------------- |:-------------:| -----:|
 | bootstrap_server      | IP of kafka server | "localhost:9092" |

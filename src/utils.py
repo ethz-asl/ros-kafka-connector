@@ -13,7 +13,7 @@ def load_yaml_to_dict(yaml_file: str, robot_name: str = "UGV") -> dict:
     takes yaml file and converts to dict which includes topic names & msg types
 
     :param yaml_file (str): path to yaml file
-    :param robot_name(str, optional): first line of yaml file, default -> 'UGV' 
+    :param robot_name(str, optional): first line of yaml file, default -> 'UGV'
     :return topic_dict (dict): dictionary mapping topics & msg types
 
     example: topic_list.yaml
@@ -51,7 +51,7 @@ def load_yaml_to_dict(yaml_file: str, robot_name: str = "UGV") -> dict:
 def import_msg_type(msg_type: str):
     """
     takes a ros msg_type and dynamically imports the msg type and returns it
-    
+
     :params msg_type (str): the string identifier for the ROS msg type
     :return subscriber_type (class): the corresponding ROS msg class
     :raises ValueError: if msg_type is not found
@@ -140,6 +140,14 @@ def import_msg_type(msg_type: str):
         from tf2_msgs.msg import TFMessage
 
         subscriber_msg = TFMessage
+    elif msg_type == "robotnik_msgs/BatteryStatus":
+        from robotnik_msgs.msg import BatteryStatus
+
+        subscriber_msg = BatteryStatus
+    elif msg_type == "robotnik_msgs/State":
+        from robotnik_msgs.msg import State
+
+        subscriber_msg = State
     else:
         raise ValueError(
             f'MSG "{msg_type}" IS NOT SUPPORTED \nPlease add imports to utils.py for specific msg type.'

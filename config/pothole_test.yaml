@@ -1,0 +1,7 @@
+UGV:
+    - msg_type: "sensor_msgs/Image"
+      ros_topic: "/wrist_rgbd_camera/rgb/image_raw" 
+      kafka_topic: "ugv.image.arm"
+    - msg_type: "sensor_msgs/Image"
+      ros_topic: "/front_rgbd_camera/rgb/image_raw" 
+      kafka_topic: "ugv.image.body"
