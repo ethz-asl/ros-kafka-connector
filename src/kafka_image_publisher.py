@@ -46,51 +46,27 @@ class KafkaImagePublisher:
         self.bridge = CvBridge() # start bridge to convert images
 
         # services for before/after image processing
-        self.body_img_srv = rospy.Service(
-            "/kafka/publish_body_image",
+        self.img_srv = rospy.Service(
+            "/kafka/publish_image",
             SendImageToKafka,
-            self.send_body_image_cb,
+            self.send_to_kafka,
         )
-        self.arm_img_srv = rospy.Service(
-            "/kafka/publish_arm_image", SendImageToKafka, self.send_arm_image_cb
-        )
-
+    
         rospy.spin()
 
     def load_parameters(self) -> None:
-        self.filename_ = rospy.get_param("~topics_filename", "topics.yaml")
         self.bootstrap_server_ = rospy.get_param(
             "~bootstrap_server", "10.2.0.8:9092"
         )
         self.security_protocol_ = rospy.get_param(
             "~security_protocol", "PLAINTEXT"
         )
-        self.update_rate_ = float(rospy.get_param("~update_rate", "10.0"))
-        self.rate_ = rospy.Rate(self.update_rate_)
-        self.robot_name_ = rospy.get_param("~robot_name", "UGV")
-        self.body_ros_topic_ = "/front_rgbd_camera/rgb/image_raw"
-        self.arm_ros_topic_ = "/wrist_rgbd_camera/rgb/image_raw"
-        self.body_kafka_topic_ = "ugv.image.body"
-        self.arm_kafka_topic_ = "ugv.image.arm"
+        self.kafka_topic_ = "ugv.image"
 
-    def send_body_image_cb(
-        self, req: SendImageToKafkaRequest
-    ) -> SendImageToKafkaResponse:
-
-        return self.send_to_kafka(
-            self.body_kafka_topic_, req.message, req.image
-        )
-
-    def send_arm_image_cb(
-        self, req: SendImageToKafkaRequest
-    ) -> SendImageToKafkaResponse:
-
-        return self.send_to_kafka(self.arm_kafka_topic_, req.message, req.image)
-
-    def send_to_kafka(self, kafka_topic: str, msg: str, img: Image) -> SendImageToKafkaResponse:
+    def send_to_kafka(self, req: SendImageToKafkaRequest) -> SendImageToKafkaResponse:
         try:
             cv_image = self.bridge.imgmsg_to_cv2(
-                img, desired_encoding="passthrough"
+                req.image, desired_encoding="passthrough"
             )
             _, buffer = cv2.imencode(
                 ".jpg", cv_image, [cv2.IMWRITE_JPEG_QUALITY, 50]
@@ -98,13 +74,13 @@ class KafkaImagePublisher:
             base64_image = base64.b64encode(buffer).decode("utf-8")
 
             # Create a json message
-            json_message = {"message": msg, "image_data": base64_image}
-            rospy.loginfo(f"Encoded image to Base64 for topic {kafka_topic}")
-            self.producer.send(kafka_topic, json_message)
+            json_message = {"message": str(req.message), "image_data": base64_image}
+            rospy.loginfo(f"Encoded image to Base64 for topic {self.kafka_topic_}")
+            self.producer.send(self.kafka_topic_, json_message)
             return SendImageToKafkaResponse(success=True)
         except Exception as err:
             rospy.logerr(
-                f"Failed to process image message for topic {kafka_topic}: {err}"
+                f"Failed to process image message for topic {self.kafka_topic_}: {err}"
             )
             return SendImageToKafkaResponse(success=False)
 
