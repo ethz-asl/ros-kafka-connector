@@ -57,9 +57,9 @@ sudo chmod 600 /etc/wireguard/<folder_name>/*
 
 **To start the VPN:**
 ```bahs
-sudo wg-quick up /etc/wireguard/heron/wg_heron_2.conf
+sudo wg-quick up /etc/wireguard/heron/wg_heron_N.conf
 ```
-Change the `wg_heron_2.conf` file to any *but* `wg_heron_8.conf`.
+Change the `wg_heron_N.conf` to the file indicated in this spreadsheet: https://docs.google.com/document/d/1-NAwADQwtaAOnRdMFUeZa670wBLKMNpT/edit
 
 Confirm the VPN is up using:
 ```bash
