@@ -106,6 +106,14 @@ docker run -d --name=kafka-ui -p 8080:8080 \
   provectuslabs/kafka-ui:latest
 ```
 
+```bash
+docker run -d --name=kafka-ui -p 2033:8080 \
+  -e KAFKA_CLUSTERS_0_NAME=local \
+  -e KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=10.2.0.8:9092 \
+  -e KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL=PLAINTEXT \
+  provectuslabs/kafka-ui:latest
+```
+
 Access the UI at http://localhost:8080
 
 
