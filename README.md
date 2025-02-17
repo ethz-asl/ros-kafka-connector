@@ -114,6 +114,8 @@ docker run -d --name=kafka-ui -p 2033:8080 \
   provectuslabs/kafka-ui:latest
 ```
 
-Access the UI at http://localhost:8080
+Access the UI at http://localhost:8080 (HLP)
+Access the UI at http://localhost:2033 (UGV)
+
 
 
